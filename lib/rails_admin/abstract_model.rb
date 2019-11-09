@@ -43,14 +43,22 @@ module RailsAdmin
       def reset_polymorphic_parents
         @@polymorphic_parents = {}
       end
+
+      def orm_adapter(adapter, model)
+        @@orm_adapters ||=
+          { active_record: 'ActiveRecord::Base', mongoid: 'Mongoid::Document' }.
+          select { |_, klass| Module.const_get(klass) rescue false }.
+          transform_values { |klass| Module.const_get(klass) }
+
+         model < (@@orm_adapters[adapter] || model)
+      end
     end
 
     def initialize(model_or_model_name)
       @model_name = model_or_model_name.to_s
-      ancestors = model.ancestors.collect(&:to_s)
-      if ancestors.include?('ActiveRecord::Base') && !model.abstract_class?
+     if self.class.orm_adapter(:active_record, model) && !model.abstract_class?
         initialize_active_record
-      elsif ancestors.include?('Mongoid::Document')
+      elsif self.class.orm_adapter(:mongoid, model)
         initialize_mongoid
       end
     end
