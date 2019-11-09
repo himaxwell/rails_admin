@@ -65,7 +65,7 @@ module RailsAdmin
 
     # do not store a reference to the model, does not play well with ActiveReload/Rails3.2
     def model
-      @model_name.constantize
+      Module.const_get @model_name
     end
 
     def to_s
