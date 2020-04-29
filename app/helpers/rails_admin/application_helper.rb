@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'rails_admin/support/i18n'
 
 module RailsAdmin
@@ -72,10 +74,10 @@ module RailsAdmin
 
     def main_navigation
       nodes_stack = RailsAdmin::Config.visible_models(controller: controller)
-      node_model_names = nodes_stack.collect { |c| c.abstract_model.model_name }
+      node_models = nodes_stack.collect { |c| c.abstract_model.model }
 
       nodes_stack.group_by(&:navigation_label).collect do |navigation_label, nodes|
-        nodes = nodes.select { |n| n.parent.nil? || !n.parent.to_s.in?(node_model_names) }
+        nodes = nodes.select { |n| n.parent.nil? || !n.parent.in?(node_models) }
         li_stack = navigation nodes_stack, nodes
 
         label = navigation_label || t('admin.misc.navigation')
@@ -114,11 +116,12 @@ module RailsAdmin
         model_param = node.abstract_model.to_param
         url         = rails_admin.url_for(action: :index, controller: 'rails_admin/main', model_name: model_param)
         level_class = " nav-level-#{level}" if level > 0
-        nav_icon = node.navigation_icon ? %(<i class="#{node.navigation_icon}"></i>).html_safe : ''
+        nav_icon = node.navigation_icon ? %(<i class="#{node.navigation_icon}"></i>) : nil
         li = content_tag :li, data: {model: model_param} do
-          link_to nav_icon + capitalize_first_letter(node.label_plural), url, class: "pjax#{level_class}"
+          link_to "#{nav_icon}#{capitalize_first_letter(node.label_plural)}".html_safe, url, class: "pjax#{level_class}"
         end
-        li + navigation(nodes_stack, nodes_stack.select { |n| n.parent.to_s == node.abstract_model.model_name }, level + 1)
+        nodel_model = node.abstract_model.model
+        li + navigation(nodes_stack, nodes_stack.select { |n| n.parent == nodel_model }, level + 1)
       end.join.html_safe
     end
 

@@ -36,6 +36,15 @@ module RailsAdmin
           # For Rails 4 not implemented
         end
       end
+
+      if defined?(ActionDispatch::Reloader)
+        ActionDispatch::Reloader.to_prepare do
+          # reload model classes in dev mode
+          if RailsAdmin::AbstractModel.class_variable_get(:@@all)
+            RailsAdmin::AbstractModel.all.each { |model| model.model_name.constantize }
+          end
+        end
+      end
     end
 
     rake_tasks do

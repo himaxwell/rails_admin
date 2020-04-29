@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'rails_admin/support/datetime'
 
 module RailsAdmin
@@ -55,7 +57,7 @@ module RailsAdmin
 
     # do not store a reference to the model, does not play well with ActiveReload/Rails3.2
     def model
-      @model_name.constantize
+      Module.const_get @model_name
     end
 
     def to_s
@@ -67,11 +69,11 @@ module RailsAdmin
     end
 
     def to_param
-      @model_name.split('::').collect(&:underscore).join('~')
+      @param_name ||= @model_name.split('::').collect(&:underscore).join('~')
     end
 
     def param_key
-      @model_name.split('::').collect(&:underscore).join('_')
+      @param_name ||= @model_name.split('::').collect(&:underscore).join('_')
     end
 
     def pretty_name

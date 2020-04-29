@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module RailsAdmin
   module Config
     # A module for all configurables.
@@ -61,13 +63,14 @@ module RailsAdmin
           end
 
           # Define getter/setter by the option name
+          instance_var = "@#{option_name}_registered".to_sym
           scope.send(:define_method, option_name) do |*args, &block|
             if !args[0].nil? || block
               # Invocation with args --> This is the declaration of the option, i.e. setter
-              instance_variable_set("@#{option_name}_registered", args[0].nil? ? block : args[0])
+              instance_variable_set(instance_var, args[0].nil? ? block : args[0])
             else
               # Invocation without args nor block --> It's the use of the option, i.e. getter
-              value = instance_variable_get("@#{option_name}_registered")
+              value = instance_variable_get(instance_var)
               case value
               when Proc
                 value = with_recurring(option_name, value, default)

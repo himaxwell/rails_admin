@@ -77,11 +77,12 @@ module RailsAdmin
         0
       end
 
+      ROOT_CLASSES = [Object, BasicObject, ActiveRecord::Base].to_set
       # parent node in navigation/breadcrumb
       register_instance_option :parent do
         @parent_model ||= begin
           klass = abstract_model.model.superclass
-          klass = nil if klass.to_s.in?(%w(Object BasicObject ActiveRecord::Base))
+          klass = nil if ROOT_CLASSES.include?(klass)
           klass
         end
       end
