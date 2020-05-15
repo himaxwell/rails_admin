@@ -27,6 +27,15 @@ module RailsAdmin
     end
 
     initializer 'RailsAdmin reload config in development' do
+      if defined?(ActiveSupport::Reloader)
+        # reload model classes in dev mode
+        ActiveSupport::Reloader.to_prepare do
+          if RailsAdmin::AbstractModel.class_variable_get(:@@all)
+            RailsAdmin::AbstractModel.all.each { |model| model.model_name.constantize }
+          end
+        end
+      end
+
       if Rails.application.config.cache_classes
         if defined?(ActiveSupport::Reloader)
           ActiveSupport::Reloader.before_class_unload do
@@ -34,15 +43,6 @@ module RailsAdmin
           end
           # else
           # For Rails 4 not implemented
-        end
-      end
-
-      if defined?(ActionDispatch::Reloader)
-        ActionDispatch::Reloader.to_prepare do
-          # reload model classes in dev mode
-          if RailsAdmin::AbstractModel.class_variable_get(:@@all)
-            RailsAdmin::AbstractModel.all.each { |model| model.model_name.constantize }
-          end
         end
       end
     end
